@@ -87,6 +87,7 @@ const register = async (req, res) => {
 // Login user
 const login = async (req, res) => {
   try {
+    console.log('Login attempt:', req.body);
     const { error } = loginSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });

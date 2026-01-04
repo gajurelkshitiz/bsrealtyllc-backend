@@ -124,7 +124,17 @@ const getContactById = async (req, res) => {
 // Update contact status
 const updateContactStatus = async (req, res) => {
   try {
+    // Validate ObjectId
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid contact ID format' });
+    }
+
     const { status, isSpam } = req.body;
+
+    // Validate status
+    if (status && !['new', 'pending', 'responded', 'closed'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be new, pending, responded, or closed.' });
+    }
 
     const updateData = {};
     if (status) updateData.status = status;
@@ -228,27 +238,32 @@ const exportContactsToCSV = async (req, res) => {
 const getContactStats = async (req, res) => {
   try {
     const totalContacts = await Contact.countDocuments();
-    const newContacts = await Contact.countDocuments({ status: 'new' });
-    const readContacts = await Contact.countDocuments({ status: 'read' });
+    const pendingContacts = await Contact.countDocuments({ status: 'new' });
     const respondedContacts = await Contact.countDocuments({ status: 'responded' });
-    const archivedContacts = await Contact.countDocuments({ status: 'archived' });
+    const closedContacts = await Contact.countDocuments({ status: 'closed' });
     const spamContacts = await Contact.countDocuments({ isSpam: true });
 
-    // Get contacts from last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentContacts = await Contact.countDocuments({
-      createdAt: { $gte: thirtyDaysAgo }
+    // Get contacts from this month
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thisMonthContacts = await Contact.countDocuments({
+      createdAt: { $gte: startOfThisMonth }
+    });
+
+    // Get contacts from last month
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthContacts = await Contact.countDocuments({
+      createdAt: { $gte: startOfLastMonth, $lt: endOfLastMonth }
     });
 
     res.json({
       total: totalContacts,
-      new: newContacts,
-      read: readContacts,
+      pending: pendingContacts,
       responded: respondedContacts,
-      archived: archivedContacts,
-      spam: spamContacts,
-      recent: recentContacts
+      closed: closedContacts,
+      thisMonth: thisMonthContacts,
+      lastMonth: lastMonthContacts
     });
   } catch (error) {
     console.error('Get contact stats error:', error);

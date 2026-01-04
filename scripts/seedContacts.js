@@ -10,7 +10,7 @@ const sampleContacts = [
     subject: 'Property Inquiry',
     message: 'I am interested in buying a property in downtown area.',
     recaptchaToken: 'sample_token_1',
-    status: 'new'
+    status: 'pending'
   },
   {
     name: 'Jane Smith',

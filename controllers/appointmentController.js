@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const mongoose = require('mongoose');
 const Appointment = require('../models/Appointment');
 const { Parser } = require('json2csv');
 
@@ -124,6 +125,10 @@ const getAppointments = async (req, res) => {
 // Get appointment by ID
 const getAppointmentById = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid appointment ID' });
+    }
+
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
@@ -141,8 +146,12 @@ const updateAppointmentStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    if (!['pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
+    if (!['new', 'pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid appointment ID' });
     }
 
     const appointment = await Appointment.findByIdAndUpdate(
@@ -168,6 +177,10 @@ const updateAppointmentStatus = async (req, res) => {
 // Delete appointment
 const deleteAppointment = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid appointment ID' });
+    }
+
     const appointment = await Appointment.findByIdAndDelete(req.params.id);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
@@ -246,7 +259,7 @@ const exportAppointmentsToCSV = async (req, res) => {
 const getAppointmentStats = async (req, res) => {
   try {
     const totalAppointments = await Appointment.countDocuments();
-    const pendingAppointments = await Appointment.countDocuments({ status: 'pending' });
+    const pendingAppointments = await Appointment.countDocuments({ status: 'new' });
     const confirmedAppointments = await Appointment.countDocuments({ status: 'confirmed' });
     const completedAppointments = await Appointment.countDocuments({ status: 'completed' });
     const cancelledAppointments = await Appointment.countDocuments({ status: 'cancelled' });
@@ -271,11 +284,11 @@ const getAppointmentStats = async (req, res) => {
     ]);
 
     res.json({
-      total: totalAppointments,
-      pending: pendingAppointments,
-      confirmed: confirmedAppointments,
-      completed: completedAppointments,
-      cancelled: cancelledAppointments,
+      totalAppointments: totalAppointments,
+      pendingAppointments: pendingAppointments,
+      confirmedAppointments: confirmedAppointments,
+      completedAppointments: completedAppointments,
+      cancelledAppointments: cancelledAppointments,
       recent: recentAppointments,
       categories: categoryStats,
       preferences: preferenceStats

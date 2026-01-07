@@ -49,26 +49,28 @@ app.use('/api/appointments', require('./routes/appointment'));
 app.use('/api/job-applications', require('./routes/jobApplication'));
 app.use('/api/agent-applications', require('./routes/agentApplication'));
 app.use('/api/property-inquiries', require('./routes/propertyInquiry'));
-  app.use('/api/insurance-quotes', require('./routes/insuranceQuote'));
+app.use('/api/insurance-quotes', require('./routes/insuranceQuote'));
+app.use('/api/home-improvement-quotes', require('./routes/homeImprovementQuote'));
 
-  // Home route
-  app.get('/', (req, res) => {
-    res.json({
-      message: 'Welcome to BS Realty LLC Backend API',
-      status: 'Running',
-      version: '1.0.0',
-      endpoints: {
-        auth: '/api/auth',
-        contacts: '/api/contacts',
-        appointments: '/api/appointments',
-        'job-applications': '/api/job-applications',
-        'agent-applications': '/api/agent-applications',
-        'property-inquiries': '/api/property-inquiries',
-        'insurance-quotes': '/api/insurance-quotes',
-        health: '/api/health'
-      }
-    });
+// Home route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to BS Realty LLC Backend API',
+    status: 'Running',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      contacts: '/api/contacts',
+      appointments: '/api/appointments',
+      'job-applications': '/api/job-applications',
+      'agent-applications': '/api/agent-applications',
+      'property-inquiries': '/api/property-inquiries',
+      'insurance-quotes': '/api/insurance-quotes',
+      'home-improvement-quotes': '/api/home-improvement-quotes',
+      health: '/api/health'
+    }
   });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
